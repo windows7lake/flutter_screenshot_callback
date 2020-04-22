@@ -32,7 +32,7 @@ import java.util.ArrayList;
 public class ScreenshotCallbackPlugin implements MethodCallHandler {
     private static MethodChannel channel;
 
-    private String TAG = "tag";
+    private String TAG = "ScreenshotCallbackPlugin";
     ;
     private Context context;
     private long startListenTime = 0;
@@ -259,10 +259,10 @@ public class ScreenshotCallbackPlugin implements MethodCallHandler {
         }
 
         // 判断依据二: 尺寸判断
-        // 如果图片尺寸超出屏幕, 则认为当前没有截屏
+        // 如果图片尺寸超出屏幕, 则认为当前没有截屏，高度误差范围 0 - 200
         if (sScreenRealSize != null) {
-            if (!((width <= sScreenRealSize.x && height <= sScreenRealSize.y)
-                    || (height <= sScreenRealSize.x && width <= sScreenRealSize.y))) {
+            if (!((width <= sScreenRealSize.x && height <= sScreenRealSize.y + 200)
+                    || (height <= sScreenRealSize.x && width <= sScreenRealSize.y + 200))) {
                 return false;
             }
         }
