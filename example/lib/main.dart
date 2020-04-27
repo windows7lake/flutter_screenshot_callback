@@ -22,7 +22,6 @@ class _MyAppState extends State<MyApp> {
 
   void init() async {
     await initScreenshotCallback();
-
   }
 
   //It must be created after permission is granted.

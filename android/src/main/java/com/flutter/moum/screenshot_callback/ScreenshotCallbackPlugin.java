@@ -33,9 +33,9 @@ public class ScreenshotCallbackPlugin implements MethodCallHandler {
     private static MethodChannel channel;
 
     private String TAG = "ScreenshotCallbackPlugin";
-    ;
     private Context context;
     private long startListenTime = 0;
+    private boolean notifyForDescendants = false;
     // 运行在 UI 线程的 Handler, 用于运行监听器回调
     private Handler uiHandler = new Handler(Looper.getMainLooper());
     // 内部存储器内容观察者
@@ -90,8 +90,6 @@ public class ScreenshotCallbackPlugin implements MethodCallHandler {
 
     @Override
     public void onMethodCall(MethodCall call, Result result) {
-        //Log.d(TAG, "onMethodCall: ");
-
         if (call.method.equals("initialize")) {
             startListen();
             result.success("initialize");
@@ -124,17 +122,29 @@ public class ScreenshotCallbackPlugin implements MethodCallHandler {
         // 创建内容观察者
         mInternalObserver = new MediaContentObserver(MediaStore.Images.Media.INTERNAL_CONTENT_URI, uiHandler);
         mExternalObserver = new MediaContentObserver(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, uiHandler);
+
+        // 假设UriMatcher 里注册的Uri共有一下类型：
+        // 1 、content://com.qin.cb/student (学生)
+        // 2 、content://com.qin.cb/student/#
+        // 3、 content://com.qin.cb/student/schoolchild(小学生，派生的Uri)
+        // 假设我们当前需要观察的Uri为content://com.qin.cb/student，如果发生数据变化的Uri为
+        // content://com.qin.cb/student/schoolchild ，当notifyForDescendants为 false，那么该ContentObserver会监听不到，
+        // 但是当notifyForDescendants 为true，能捕捉该Uri的数据库变化。
+        if (Build.VERSION.SDK_INT >= 29) notifyForDescendants = true;
+
         // 注册内容观察者
         context.getContentResolver().registerContentObserver(
                 MediaStore.Images.Media.INTERNAL_CONTENT_URI,
-                false,
+                notifyForDescendants,
                 mInternalObserver
         );
         context.getContentResolver().registerContentObserver(
                 MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                false,
+                notifyForDescendants,
                 mExternalObserver
         );
+
+        Log.d(TAG, "startListen");
     }
 
     /**
@@ -164,12 +174,15 @@ public class ScreenshotCallbackPlugin implements MethodCallHandler {
         // 清空数据
         startListenTime = 0;
         sHasCallbackPaths.clear();
+
+        Log.d(TAG, "stopListen");
     }
 
     /**
      * 处理媒体数据库的内容改变
      */
     private void handleMediaContentChange(Uri contentUri) {
+        Log.d(TAG, "handleMediaContentChange");
         Cursor cursor = null;
         try {
             // 数据改变时查询数据库中最后加入的一条数据
@@ -252,12 +265,15 @@ public class ScreenshotCallbackPlugin implements MethodCallHandler {
      * 判断指定的数据行是否符合截屏条件
      */
     private boolean checkScreenShot(String data, long dateTaken, int width, int height) {
+        Log.d(TAG, "===>>> checkScreenShot 1  dateTaken: " + dateTaken);
         // 判断依据一: 时间判断
         // 如果加入数据库的时间在开始监听之前, 或者与当前时间相差大于10秒, 则认为当前没有截屏
+        // 某些情况下时间会返回0(Android Q)
         if (dateTaken < startListenTime || (System.currentTimeMillis() - dateTaken) > 10 * 1000) {
-            return false;
+            if (dateTaken != 0) return false;
         }
 
+        Log.d(TAG, "===>>> checkScreenShot 2");
         // 判断依据二: 尺寸判断
         // 如果图片尺寸超出屏幕, 则认为当前没有截屏，高度误差范围 0 - 200
         if (sScreenRealSize != null) {
@@ -267,6 +283,7 @@ public class ScreenshotCallbackPlugin implements MethodCallHandler {
             }
         }
 
+        Log.d(TAG, "===>>> checkScreenShot 3");
         // 判断依据三: 路径判断
         if (TextUtils.isEmpty(data)) return false;
         data = data.toLowerCase();
@@ -275,6 +292,7 @@ public class ScreenshotCallbackPlugin implements MethodCallHandler {
             if (data.contains(keyWork)) return true;
         }
 
+        Log.d(TAG, "===>>> checkScreenShot 4");
         return false;
     }
 
