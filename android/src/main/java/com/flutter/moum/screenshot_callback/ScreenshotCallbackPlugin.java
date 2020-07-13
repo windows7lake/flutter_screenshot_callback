@@ -53,6 +53,7 @@ public class ScreenshotCallbackPlugin implements MethodCallHandler {
     private static final String SORT_ORDER = MediaStore.Images.Media.DATE_ADDED + " DESC LIMIT 1";
     // 截屏依据中的路径判断关键字
     private static final String[] KEYWORDS = {
+            "screenshots", "screen_shots", "screen-shots", "screen shots",
             "screenshot", "screen_shot", "screen-shot", "screen shot", "screencapture",
             "screen_capture", "screen-capture", "screen capture", "screencap", "screen_cap",
             "screen-cap", "screen cap", "截图", "截屏", "截圖", "截屏"
@@ -277,8 +278,8 @@ public class ScreenshotCallbackPlugin implements MethodCallHandler {
         // 判断依据二: 尺寸判断
         // 如果图片尺寸超出屏幕, 则认为当前没有截屏，高度误差范围 0 - 200
         if (sScreenRealSize != null) {
-            if (!((width <= sScreenRealSize.x && height <= sScreenRealSize.y + 200)
-                    || (height <= sScreenRealSize.x && width <= sScreenRealSize.y + 200))) {
+            if (!((width <= sScreenRealSize.x && height <= sScreenRealSize.y + 400)
+                    || (height <= sScreenRealSize.x && width <= sScreenRealSize.y + 400))) {
                 return false;
             }
         }
