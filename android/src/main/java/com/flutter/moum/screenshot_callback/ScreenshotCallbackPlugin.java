@@ -35,6 +35,7 @@ public class ScreenshotCallbackPlugin implements MethodCallHandler {
     private String TAG = "ScreenshotCallbackPlugin";
     private Context context;
     private long startListenTime = 0;
+    private long screenshotTime = 0;
     private boolean notifyForDescendants = false;
     // 运行在 UI 线程的 Handler, 用于运行监听器回调
     private Handler uiHandler = new Handler(Looper.getMainLooper());
@@ -230,6 +231,7 @@ public class ScreenshotCallbackPlugin implements MethodCallHandler {
             Log.d(TAG, "ScreenShot: path = " + data + "; size = " + width + " * " + height
                     + "; date = " + dateTaken);
             if (!checkCallback(data)) {
+                Log.d(TAG, "ScreenShot checkCallback and post");
                 uiHandler.post(new Runnable() {
                     @Override
                     public void run() {
@@ -266,8 +268,17 @@ public class ScreenshotCallbackPlugin implements MethodCallHandler {
      * 判断指定的数据行是否符合截屏条件
      */
     private boolean checkScreenShot(String data, long dateTaken, int width, int height) {
+        Log.d(TAG, "===>>> checkScreenShot 0");
+        // 判断依据一: 插入内容时间差
+        // 如果插入内容时间差小于3秒, 则认为当前没有截屏，因为部分机型会多次触发
+        if (System.currentTimeMillis() - screenshotTime < 3 * 1000) {
+            screenshotTime = System.currentTimeMillis();
+            return false;
+        }
+        screenshotTime = System.currentTimeMillis();
+
         Log.d(TAG, "===>>> checkScreenShot 1  dateTaken: " + dateTaken);
-        // 判断依据一: 时间判断
+        // 判断依据二: 时间判断
         // 如果加入数据库的时间在开始监听之前, 或者与当前时间相差大于10秒, 则认为当前没有截屏
         // 某些情况下时间会返回0(Android Q)
         if (dateTaken < startListenTime || (System.currentTimeMillis() - dateTaken) > 10 * 1000) {
@@ -275,7 +286,7 @@ public class ScreenshotCallbackPlugin implements MethodCallHandler {
         }
 
         Log.d(TAG, "===>>> checkScreenShot 2");
-        // 判断依据二: 尺寸判断
+        // 判断依据三: 尺寸判断
         // 如果图片尺寸超出屏幕, 则认为当前没有截屏，高度误差范围 0 - 200
         if (sScreenRealSize != null) {
             if (!((width <= sScreenRealSize.x && height <= sScreenRealSize.y + 400)
@@ -285,7 +296,7 @@ public class ScreenshotCallbackPlugin implements MethodCallHandler {
         }
 
         Log.d(TAG, "===>>> checkScreenShot 3");
-        // 判断依据三: 路径判断
+        // 判断依据四: 路径判断
         if (TextUtils.isEmpty(data)) return false;
         data = data.toLowerCase();
         // 判断图片路径是否含有指定的关键字之一, 如果有, 则认为当前截屏了

@@ -1,62 +1,33 @@
 import 'package:flutter/material.dart';
-import 'package:screenshot_callback/screenshot_callback.dart';
+import 'package:screenshot_callback_example/second_page.dart';
 
 void main() => runApp(MyApp());
 
-class MyApp extends StatefulWidget {
-  @override
-  _MyAppState createState() => _MyAppState();
-}
-
-class _MyAppState extends State<MyApp> {
-  ScreenshotCallback screenshotCallback;
-
-  String text = "Ready..";
-
-  @override
-  void initState() {
-    super.initState();
-
-    init();
-  }
-
-  void init() async {
-    await initScreenshotCallback();
-  }
-
-  //It must be created after permission is granted.
-  Future<void> initScreenshotCallback() async {
-    screenshotCallback = ScreenshotCallback();
-
-    screenshotCallback.addListener(() {
-      setState(() {
-        text = "Screenshot callback Fired!";
-      });
-    });
-
-    screenshotCallback.addListener(() {
-      print("We can add multiple listeners ");
-    });
-  }
-
-  @override
-  void dispose() {
-    screenshotCallback.dispose();
-    super.dispose();
-  }
-
+class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Detect Screenshot Callback Example'),
-        ),
-        body: Center(
-          child: Text(text,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-              )),
+      home: HomePage(),
+    );
+  }
+}
+
+class HomePage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Detect Screenshot Callback Example'),
+      ),
+      body: Center(
+        child: FlatButton(
+          onPressed: () {
+            print(">>>>>>>>>>>");
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => SecondPage()),
+            );
+          },
+          child: Text("jump"),
         ),
       ),
     );
