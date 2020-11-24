@@ -1,35 +1,31 @@
 package com.flutter.moum.screenshot_callback;
 
-import io.flutter.plugin.common.MethodCall;
-import io.flutter.plugin.common.MethodChannel;
-import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
-import io.flutter.plugin.common.MethodChannel.Result;
-import io.flutter.plugin.common.PluginRegistry.Registrar;
-
 import android.content.Context;
 import android.database.ContentObserver;
 import android.database.Cursor;
 import android.graphics.Point;
 import android.net.Uri;
 import android.os.Build;
-import android.os.FileObserver;
-
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.Display;
 import android.view.WindowManager;
-//import android.util.Log;
 
-import java.io.File;
-import java.lang.reflect.Method;
-import java.util.List;
+import androidx.annotation.NonNull;
+
 import java.util.ArrayList;
+import java.util.List;
 
-public class ScreenshotCallbackPlugin implements MethodCallHandler {
+import io.flutter.embedding.engine.plugins.FlutterPlugin;
+import io.flutter.plugin.common.MethodCall;
+import io.flutter.plugin.common.MethodChannel;
+import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
+import io.flutter.plugin.common.MethodChannel.Result;
+
+public class ScreenshotCallbackPlugin implements FlutterPlugin, MethodCallHandler {
     private static MethodChannel channel;
 
     private String TAG = "ScreenshotCallbackPlugin";
@@ -62,16 +58,6 @@ public class ScreenshotCallbackPlugin implements MethodCallHandler {
     // 已回调过的路径
     private final static List<String> sHasCallbackPaths = new ArrayList<>();
 
-    private ScreenshotCallbackPlugin(Context context) {
-        if (context == null) throw new IllegalArgumentException("The context must not be null.");
-        this.context = context;
-        // 获取屏幕真实的分辨率
-        if (sScreenRealSize == null) {
-            sScreenRealSize = getRealScreenSize();
-            Log.d(TAG, "Screen Real Size: " + sScreenRealSize.x + " * " + sScreenRealSize.y);
-        }
-    }
-
     /**
      * 获取屏幕分辨率
      */
@@ -85,9 +71,22 @@ public class ScreenshotCallbackPlugin implements MethodCallHandler {
         return screenSize;
     }
 
-    public static void registerWith(Registrar registrar) {
-        channel = new MethodChannel(registrar.messenger(), "flutter.moum/screenshot_callback");
-        channel.setMethodCallHandler(new ScreenshotCallbackPlugin(registrar.activeContext()));
+    @Override
+    public void onAttachedToEngine(@NonNull FlutterPluginBinding binding) {
+        channel = new MethodChannel(binding.getBinaryMessenger(), "flutter.moum/screenshot_callback");
+        channel.setMethodCallHandler(this);
+
+        this.context = binding.getApplicationContext();
+        // 获取屏幕真实的分辨率
+        if (sScreenRealSize == null) {
+            sScreenRealSize = getRealScreenSize();
+            Log.d(TAG, "Screen Real Size: " + sScreenRealSize.x + " * " + sScreenRealSize.y);
+        }
+    }
+
+    @Override
+    public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
+        channel.setMethodCallHandler(null);
     }
 
     @Override
