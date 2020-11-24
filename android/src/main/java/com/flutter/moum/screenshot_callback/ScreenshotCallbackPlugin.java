@@ -183,7 +183,6 @@ public class ScreenshotCallbackPlugin implements FlutterPlugin, MethodCallHandle
      * 处理媒体数据库的内容改变
      */
     private void handleMediaContentChange(Uri contentUri) {
-        Log.d(TAG, "handleMediaContentChange");
         Cursor cursor = null;
         try {
             // 数据改变时查询数据库中最后加入的一条数据
@@ -270,7 +269,8 @@ public class ScreenshotCallbackPlugin implements FlutterPlugin, MethodCallHandle
         Log.d(TAG, "===>>> checkScreenShot 0");
         // 判断依据一: 插入内容时间差
         // 如果插入内容时间差小于3秒, 则认为当前没有截屏，因为部分机型会多次触发
-        if (System.currentTimeMillis() - screenshotTime < 3 * 1000) {
+        if (System.currentTimeMillis() - screenshotTime < 2 * 1000) {
+            Log.d(TAG, "===>>> checkScreenShot 0 ======== " + System.currentTimeMillis() + " === " + screenshotTime);
             screenshotTime = System.currentTimeMillis();
             return false;
         }
@@ -278,11 +278,12 @@ public class ScreenshotCallbackPlugin implements FlutterPlugin, MethodCallHandle
 
         Log.d(TAG, "===>>> checkScreenShot 1  dateTaken: " + dateTaken);
         // 判断依据二: 时间判断
-        // 如果加入数据库的时间在开始监听之前, 或者与当前时间相差大于10秒, 则认为当前没有截屏
+        // 如果加入数据库的时间在开始监听之前, 或者与当前时间相差大于5min, 则认为当前没有截屏
         // 某些情况下时间会返回0(Android Q)
-        if (dateTaken < startListenTime || (System.currentTimeMillis() - dateTaken) > 10 * 1000) {
-            if (dateTaken != 0) return false;
-        }
+//        if (dateTaken < startListenTime || (System.currentTimeMillis() - dateTaken) > 5 * 60 * 1000) { //
+//            Log.d(TAG, "===>>> checkScreenShot 1 ======== " + startListenTime + " === " + (System.currentTimeMillis() - dateTaken));
+//            if (dateTaken != 0) return false;
+//        }
 
         Log.d(TAG, "===>>> checkScreenShot 2");
         // 判断依据三: 尺寸判断
@@ -300,6 +301,7 @@ public class ScreenshotCallbackPlugin implements FlutterPlugin, MethodCallHandle
         data = data.toLowerCase();
         // 判断图片路径是否含有指定的关键字之一, 如果有, 则认为当前截屏了
         for (String keyWork : KEYWORDS) {
+            Log.d(TAG, "===>>> checkScreenShot ok");
             if (data.contains(keyWork)) return true;
         }
 
@@ -322,6 +324,7 @@ public class ScreenshotCallbackPlugin implements FlutterPlugin, MethodCallHandle
         @Override
         public void onChange(boolean selfChange) {
             super.onChange(selfChange);
+            Log.d(TAG, "===>>> checkScreenShot onChange");
             handleMediaContentChange(mContentUri);
         }
     }
