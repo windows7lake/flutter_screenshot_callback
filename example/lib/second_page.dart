@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:screenshot_callback/screenshot_callback.dart';
 
 class SecondPage extends StatefulWidget {
@@ -33,6 +34,16 @@ class _SecondPageState extends State<SecondPage> {
 
     screenshotCallback.addListener(() {
       print("We can add multiple listeners ");
+      Fluttertoast.cancel();
+      Fluttertoast.showToast(
+          msg: "Screenshot callback Fired!",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.CENTER,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0
+      );
     });
   }
 

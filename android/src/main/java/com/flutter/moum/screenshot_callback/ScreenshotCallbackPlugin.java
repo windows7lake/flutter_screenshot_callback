@@ -44,10 +44,13 @@ public class ScreenshotCallbackPlugin implements FlutterPlugin, MethodCallHandle
     private static final String[] MEDIA_PROJECTIONS = {
             MediaStore.Images.ImageColumns.DATA,
             MediaStore.Images.ImageColumns.DATE_TAKEN,
+            MediaStore.Images.ImageColumns.DATE_ADDED,
+            MediaStore.Images.ImageColumns.DATE_MODIFIED,
+            MediaStore.Images.ImageColumns.DATE_EXPIRES,
             MediaStore.Images.ImageColumns.WIDTH,
             MediaStore.Images.ImageColumns.HEIGHT,
     };
-    private static final String SORT_ORDER = MediaStore.Images.Media.DATE_ADDED + " DESC LIMIT 1";
+    private static final String SORT_ORDER = MediaStore.Images.Media.DATE_MODIFIED + " DESC LIMIT 1";
     // 截屏依据中的路径判断关键字
     private static final String[] KEYWORDS = {
             "screenshots", "screen_shots", "screen-shots", "screen shots",
@@ -203,15 +206,22 @@ public class ScreenshotCallbackPlugin implements FlutterPlugin, MethodCallHandle
             // 获取各列的索引
             int dataIndex = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA);
             int dateTakenIndex = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATE_TAKEN);
+            int dateAddedIndex = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATE_ADDED);
+            int dateModifyIndex = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATE_MODIFIED);
+            int dateExpireIndex = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATE_EXPIRES);
             int widthIndex = cursor.getColumnIndex(MediaStore.Images.ImageColumns.WIDTH);
             int heightIndex = cursor.getColumnIndex(MediaStore.Images.ImageColumns.HEIGHT);
-
             // 获取行数据
             String data = cursor.getString(dataIndex);
             long dateTaken = cursor.getLong(dateTakenIndex);
+            long dateAdded = cursor.getLong(dateAddedIndex);
+            long dateModify = cursor.getLong(dateModifyIndex);
+            long dateExpire = cursor.getLong(dateExpireIndex);
             int width = cursor.getInt(widthIndex);
             int height = cursor.getInt(heightIndex);
 
+            Log.d(TAG, "ScreenShot: dateTaken = " + dateTaken + "; dateAdded = " + dateAdded +
+                    "; dateModify = " + dateModify + "; dateExpire = "+ dateExpire);
             // 处理获取到的第一行数据
             handleMediaRowData(data, dateTaken, width, height);
         } catch (Exception e) {
@@ -249,16 +259,16 @@ public class ScreenshotCallbackPlugin implements FlutterPlugin, MethodCallHandle
      * 删除一个图片也会发通知, 同时防止删除图片时误将上一张符合截屏规则的图片当做是当前截屏.
      */
     private boolean checkCallback(String imagePath) {
-        if (sHasCallbackPaths.contains(imagePath)) {
-            Log.d(TAG, "ScreenShot: imgPath has done"
-                    + "; imagePath = " + imagePath);
-            return true;
-        }
-        // 大概缓存15~20条记录便可
-        if (sHasCallbackPaths.size() >= 20) {
-            sHasCallbackPaths.subList(0, 5).clear();
-        }
-        sHasCallbackPaths.add(imagePath);
+//        if (sHasCallbackPaths.contains(imagePath)) {
+//            Log.d(TAG, "ScreenShot: imgPath has done"
+//                    + "; imagePath = " + imagePath);
+//            return true;
+//        }
+//        // 大概缓存15~20条记录便可
+//        if (sHasCallbackPaths.size() >= 20) {
+//            sHasCallbackPaths.subList(0, 5).clear();
+//        }
+//        sHasCallbackPaths.add(imagePath);
         return false;
     }
 
@@ -269,7 +279,7 @@ public class ScreenshotCallbackPlugin implements FlutterPlugin, MethodCallHandle
         Log.d(TAG, "===>>> checkScreenShot 0");
         // 判断依据一: 插入内容时间差
         // 如果插入内容时间差小于3秒, 则认为当前没有截屏，因为部分机型会多次触发
-        if (System.currentTimeMillis() - screenshotTime < 2 * 1000) {
+        if (System.currentTimeMillis() - screenshotTime < 1000) {
             Log.d(TAG, "===>>> checkScreenShot 0 ======== " + System.currentTimeMillis() + " === " + screenshotTime);
             screenshotTime = System.currentTimeMillis();
             return false;
