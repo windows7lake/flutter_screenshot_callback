@@ -39,7 +39,6 @@ class ScreenshotCallback {
   Future<dynamic> _handleMethod(MethodCall call) async {
     switch (call.method) {
       case 'onCallback':
-        print("onCallback ==>>>>>>> fired");
         for (var callback in onCallbacks) callback();
         break;
       default:

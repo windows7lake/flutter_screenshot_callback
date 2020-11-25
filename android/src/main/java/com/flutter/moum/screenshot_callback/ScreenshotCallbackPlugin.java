@@ -26,7 +26,7 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 
 public class ScreenshotCallbackPlugin implements FlutterPlugin, MethodCallHandler {
-    private static MethodChannel channel;
+    private MethodChannel channel;
 
     private String TAG = "ScreenshotCallbackPlugin";
     private Context context;
