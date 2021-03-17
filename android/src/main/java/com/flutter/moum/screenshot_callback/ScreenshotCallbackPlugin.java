@@ -288,12 +288,12 @@ public class ScreenshotCallbackPlugin implements FlutterPlugin, MethodCallHandle
 
         Log.d(TAG, "===>>> checkScreenShot 1  dateTaken: " + dateTaken);
         // 判断依据二: 时间判断
-        // 如果加入数据库的时间在开始监听之前, 或者与当前时间相差大于5min, 则认为当前没有截屏
+        // 如果加入数据库的时间在开始监听之前, 或者与当前时间相差大于5s, 则认为当前没有截屏
         // 某些情况下时间会返回0(Android Q)
-//        if (dateTaken < startListenTime || (System.currentTimeMillis() - dateTaken) > 5 * 60 * 1000) { //
-//            Log.d(TAG, "===>>> checkScreenShot 1 ======== " + startListenTime + " === " + (System.currentTimeMillis() - dateTaken));
-//            if (dateTaken != 0) return false;
-//        }
+        if (dateTaken < startListenTime || (System.currentTimeMillis() - dateTaken) > 5 * 1000) { //
+            Log.d(TAG, "===>>> checkScreenShot 1 ======== " + startListenTime + " === " + (System.currentTimeMillis() - dateTaken));
+            if (dateTaken != 0) return false;
+        }
 
         Log.d(TAG, "===>>> checkScreenShot 2");
         // 判断依据三: 尺寸判断
@@ -334,7 +334,7 @@ public class ScreenshotCallbackPlugin implements FlutterPlugin, MethodCallHandle
         @Override
         public void onChange(boolean selfChange) {
             super.onChange(selfChange);
-            Log.d(TAG, "===>>> checkScreenShot onChange");
+            Log.d(TAG, "===>>> checkScreenShot onChange: " + selfChange);
             handleMediaContentChange(mContentUri);
         }
     }

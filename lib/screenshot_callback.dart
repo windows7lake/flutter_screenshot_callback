@@ -1,5 +1,5 @@
-import 'dart:io';
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
@@ -18,7 +18,7 @@ class ScreenshotCallback {
   /// Defaults to `true`.
   bool requestPermissions;
 
-  ScreenshotCallback({ this.requestPermissions }) {
+  ScreenshotCallback({this.requestPermissions}) {
     requestPermissions ??= true;
     initialize();
   }
@@ -52,11 +52,9 @@ class ScreenshotCallback {
   }
 
   Future<void> checkPermission() async {
-    PermissionStatus status = await PermissionHandler()
-        .checkPermissionStatus(PermissionGroup.storage);
-
-    if (status != PermissionStatus.granted) {
-      await PermissionHandler().requestPermissions([PermissionGroup.storage]);
+    var status = await Permission.storage.status;
+    if (!status.isGranted) {
+      await Permission.storage.request();
     }
   }
 }

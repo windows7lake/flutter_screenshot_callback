@@ -8,17 +8,15 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  fluttertoast: ^7.1.4
-  screenshot_callback:
-    git:
-      url: https://github.com/windows7lake/flutter_screenshot_callback.git
+  fluttertoast: ^7.1.8
+  image_downloader: ^0.30.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
-#  screenshot_callback:
-#    path: ../
+  screenshot_callback:
+    path: ../
 
 flutter:
   uses-material-design: true
