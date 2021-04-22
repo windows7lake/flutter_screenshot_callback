@@ -50,7 +50,16 @@ public class ScreenshotCallbackPlugin implements FlutterPlugin, MethodCallHandle
             MediaStore.Images.ImageColumns.WIDTH,
             MediaStore.Images.ImageColumns.HEIGHT,
     };
-    private static final String SORT_ORDER = MediaStore.Images.Media.DATE_MODIFIED + " DESC LIMIT 1";
+    /**
+     * 媒体查询语句有问题：
+     * 出错了 java.lang.IllegalArgumentException: Invalid token limit
+     *
+     * 在android 11中，添加了一个约束以不允许在排序值中使用LIMIT。
+     * 您需要将查询与包参数一起使用。例如
+     * https://stackoverflow.com/questions/10390577/limiting-number-of-rows-in-a-contentresolver-query-function/62891878#62891878
+     *
+     */
+    private static final String SORT_ORDER = MediaStore.Images.Media.DATE_MODIFIED + " DESC";
     // 截屏依据中的路径判断关键字
     private static final String[] KEYWORDS = {
             "screenshots", "screen_shots", "screen-shots", "screen shots",
@@ -105,7 +114,7 @@ public class ScreenshotCallbackPlugin implements FlutterPlugin, MethodCallHandle
         }
     }
 
-    private static void assertInMainThread() {
+    private void assertInMainThread() {
         if (Looper.myLooper() != Looper.getMainLooper()) {
             StackTraceElement[] elements = Thread.currentThread().getStackTrace();
             String methodMsg = null;
@@ -279,7 +288,7 @@ public class ScreenshotCallbackPlugin implements FlutterPlugin, MethodCallHandle
         Log.d(TAG, "===>>> checkScreenShot 0");
         // 判断依据一: 插入内容时间差
         // 如果插入内容时间差小于3秒, 则认为当前没有截屏，因为部分机型会多次触发
-        if (System.currentTimeMillis() - screenshotTime < 1000) {
+        if (System.currentTimeMillis() - screenshotTime < 2000) {
             Log.d(TAG, "===>>> checkScreenShot 0 ======== " + System.currentTimeMillis() + " === " + screenshotTime);
             screenshotTime = System.currentTimeMillis();
             return false;
@@ -290,14 +299,15 @@ public class ScreenshotCallbackPlugin implements FlutterPlugin, MethodCallHandle
         // 判断依据二: 时间判断
         // 如果加入数据库的时间在开始监听之前, 或者与当前时间相差大于5s, 则认为当前没有截屏
         // 某些情况下时间会返回0(Android Q)
-        if (dateTaken < startListenTime || (System.currentTimeMillis() - dateTaken) > 5 * 1000) { //
-            Log.d(TAG, "===>>> checkScreenShot 1 ======== " + startListenTime + " === " + (System.currentTimeMillis() - dateTaken));
-            if (dateTaken != 0) return false;
-        }
+//        if (dateTaken < startListenTime || (System.currentTimeMillis() - dateTaken) > 60 * 1000) { //
+//            Log.d(TAG, "===>>> checkScreenShot 1 dateTaken: " + dateTaken + " == startListenTime: " +
+//                    startListenTime + " === " + (System.currentTimeMillis() - dateTaken));
+//            if (dateTaken != 0) return false;
+//        }
 
         Log.d(TAG, "===>>> checkScreenShot 2");
         // 判断依据三: 尺寸判断
-        // 如果图片尺寸超出屏幕, 则认为当前没有截屏，高度误差范围 0 - 200
+        // 如果图片尺寸超出屏幕, 则认为当前没有截屏，高度误差范围 0 - 400
         if (sScreenRealSize != null) {
             if (!((width <= sScreenRealSize.x && height <= sScreenRealSize.y + 400)
                     || (height <= sScreenRealSize.x && width <= sScreenRealSize.y + 400))) {
