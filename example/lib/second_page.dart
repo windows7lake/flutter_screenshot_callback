@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:image_downloader/image_downloader.dart';
 import 'package:screenshot_callback/screenshot_callback.dart';
 
 class SecondPage extends StatefulWidget {
@@ -74,18 +72,6 @@ class _SecondPageState extends State<SecondPage> {
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                 ),
-              ),
-              FlatButton(
-                onPressed: () async {
-                  fired = false;
-                  var imageId = await ImageDownloader.downloadImage(
-                    "https://cp4.100.com.tw/images/articles/202007/21/admin_30_1595329480_WybKjrUp3l.png!t1000.webp",
-                    outputMimeType: "image/png",
-                    destination: AndroidDestinationType.directoryDCIM,
-                  );
-                  fired = true;
-                },
-                child: Text('下载'),
               ),
             ],
           ),

@@ -9,7 +9,6 @@ dependencies:
   flutter:
     sdk: flutter
   fluttertoast: ^7.1.8
-  image_downloader: ^0.30.0
 
 dev_dependencies:
   flutter_test:
