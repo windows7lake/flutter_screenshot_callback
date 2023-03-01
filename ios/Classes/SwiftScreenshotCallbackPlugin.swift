@@ -23,6 +23,20 @@ public class SwiftScreenshotCallbackPlugin: NSObject, FlutterPlugin {
             NotificationCenter.default.removeObserver(SwiftScreenshotCallbackPlugin.observer!);
             SwiftScreenshotCallbackPlugin.observer = nil;
         }
+#if swift(>=4.2)
+        
+        SwiftScreenshotCallbackPlugin.observer = NotificationCenter.default.addObserver(
+            forName: UIApplication.userDidTakeScreenshotNotification,
+          object: nil,
+          queue: .main) { notification in
+          if let channel = SwiftScreenshotCallbackPlugin.channel {
+            channel.invokeMethod("onCallback", arguments: nil)
+          }
+
+          result("screen shot called")
+      }
+#else
+
         SwiftScreenshotCallbackPlugin.observer = NotificationCenter.default.addObserver(
             forName: NSNotification.Name.UIApplicationUserDidTakeScreenshot,
           object: nil,
@@ -33,6 +47,7 @@ public class SwiftScreenshotCallbackPlugin: NSObject, FlutterPlugin {
 
           result("screen shot called")
       }
+#endif
       result("initialize")
     }else if(call.method == "dispose"){
         if(SwiftScreenshotCallbackPlugin.observer != nil) {

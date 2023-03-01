@@ -20,8 +20,8 @@ class HomePage extends StatelessWidget {
         title: const Text('Detect Screenshot Callback Example'),
       ),
       body: Center(
-        child: FlatButton(
-          onPressed: () {
+        child: GestureDetector(
+          onTap: () {
             print(">>>>>>>>>>>");
             Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => SecondPage()),
